@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class StoreRegisterDto {
 
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Request {
         @NotNull
         @Size(min = 1, max = 50)
@@ -24,6 +24,11 @@ public class StoreRegisterDto {
         private String description;
     }
 
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Response {
         private Long id;
         private String storeName;
