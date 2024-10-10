@@ -10,6 +10,6 @@ import lombok.*;
 public class MemberUpdateDto {
 
     private Long id;
-    private String memberName;
+    private String username;
     private String phoneNumber;
 }

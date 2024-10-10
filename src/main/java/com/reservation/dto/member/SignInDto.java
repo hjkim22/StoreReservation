@@ -15,7 +15,7 @@ public class SignInDto {
     public static class Request {
 
         @NotBlank(message = "사용자 이름은 필수입니다.")
-        private String memberName;
+        private String username;
 
         @NotBlank(message = "비밀번호는 필수입니다.")
         private String password;
@@ -28,7 +28,7 @@ public class SignInDto {
     public static class Response {
         private String token; // JWT 토큰
         private Long userId;
-        private String memberName;
+        private String username;
         private String message;
     }
 }

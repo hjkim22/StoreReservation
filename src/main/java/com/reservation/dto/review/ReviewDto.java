@@ -13,7 +13,7 @@ public class ReviewDto {
     private Long memberId;
     private Long storeId;
     private String content;
-    private String memberName;
+    private String username;
     private String storeName;
     private int rating;
 
@@ -23,7 +23,7 @@ public class ReviewDto {
                 .storeId(review.getStore().getId())
                 .content(review.getContent())
                 .rating(review.getRating())
-                .memberName(review.getMember().getUsername())
+                .username(review.getMember().getUsername())
                 .storeName(review.getStore().getStoreName())
                 .build();
     }
