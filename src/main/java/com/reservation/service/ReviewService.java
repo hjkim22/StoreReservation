@@ -90,4 +90,16 @@ public class ReviewService {
         reviewRepository.delete(reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ApplicationException(REVIEW_NOT_FOUND)));
     }
+
+    /*
+      TODO
+      리뷰 관련 수정 시 유효성 검사 메서드(별점, 텍스트길이)
+      예약한 유저와 리뷰를 쓰려는 유저 동일 여부 메서드
+      해당 예약에 대한 리뷰가 존재 여부 메서드
+      해당 리뷰를 쓸 수 있는 상태인지 확인(예약 사용 완료 확인) 메서드
+
+      ReviewDeleteDto
+      ReviewRegisterDto
+      ReviewUpdateDto
+     */
 }

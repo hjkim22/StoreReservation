@@ -91,7 +91,7 @@ public class MemberService {
     }
 
     /**
-     * 회원 삭제(탈퇴)
+     * 회원 삭제
      * @param memberId 삭제할 회원의 ID
      * @throws ApplicationException 회원을 찾을 수 없는 경우
      */
@@ -109,5 +109,7 @@ public class MemberService {
       회원 이름으로 조회 메서드
       ID로 조회 메서드
       회원 엔티티 생성 메서드
+
+      MemberDeleteDto
      */
 }
