@@ -21,25 +21,44 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String TOKEN_HEADER = "Authorization";
-    public static final String TOKEN__PREFIX = "Bearer ";
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     private final TokenProvider tokenProvider;
 
+    /**
+     * 요청을 필터링하여 JWT 인증을 수행
+     * @param request  HttpServletRequest 객체
+     * @param response HttpServletResponse 객체
+     * @param filterChain 필터 체인
+     * @throws ServletException Servlet 처리 중 발생할 수 있는 예외
+     * @throws IOException I/O 처리 중 발생할 수 있는 예외
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = this.resolveTokenFromRequest(request);
+        String token = this.resolveTokenFromRequest(request); // 요청에서 JWT 토큰을 추출
 
+        // 토큰이 존재하고 유효한 경우 인증을 수행
         if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
+            // JWT 에서 인증 정보를 가져옴
             Authentication auth = this.tokenProvider.getAuthentication(token);
+            // SecurityContext 에 인증 정보를 설정
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
+        // 다음 필터로 요청/응답 전달
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * 요청에서 JWT 토큰 추출
+     * @param request HttpServletRequest 객체
+     * @return 추출한 JWT 토큰, 없거나 유효하지 않으면 null
+     */
     private String resolveTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader(TOKEN_HEADER);
 
+        // 토큰이 null 이 아니고 지정한 접두사로 시작하는지 확인
         if (!ObjectUtils.isEmpty(token) && token.startsWith(TOKEN_PREFIX)) {
+            // 접두사 제거 후 토큰만 반환
             return token.substring(TOKEN_PREFIX.length());
         }
         return null;
