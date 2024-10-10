@@ -12,14 +12,14 @@ import lombok.*;
 public class MemberDto {
 
     private Long id;
-    private String username;
+    private String memberName;
     private String phoneNumber;
     private MemberType memberType;
 
     public static MemberDto fromEntity(MemberEntity member) {
         return MemberDto.builder()
                 .id(member.getId())
-                .username(member.getUsername())
+                .memberName(member.getUsername())
                 .phoneNumber(member.getPhoneNumber())
                 .memberType(member.getMemberType())
                 .build();
