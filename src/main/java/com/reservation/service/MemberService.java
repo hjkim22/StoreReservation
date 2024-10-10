@@ -8,6 +8,9 @@ import com.reservation.dto.member.SignUpDto;
 import com.reservation.exception.ApplicationException;
 import com.reservation.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +18,7 @@ import static com.reservation.type.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -100,6 +103,12 @@ public class MemberService {
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
 
         memberRepository.delete(member);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return memberRepository.findByUsername(username)
+                .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
     }
 
     /*
