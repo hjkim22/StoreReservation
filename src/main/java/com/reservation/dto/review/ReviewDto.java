@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ReviewDto {
 
+    private Long reviewId;
     private Long memberId;
     private Long storeId;
     private String content;
@@ -19,6 +20,7 @@ public class ReviewDto {
 
     public static ReviewDto fromEntity(ReviewEntity review) {
         return ReviewDto.builder()
+                .reviewId(review.getId())
                 .memberId(review.getMember().getId())
                 .storeId(review.getStore().getId())
                 .content(review.getContent())
