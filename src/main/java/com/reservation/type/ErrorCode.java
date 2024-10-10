@@ -18,7 +18,6 @@ public enum ErrorCode {
     // 사용자 관련 오류 코드
     // ============================
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "사용자가 없습니다."), // 400
-    MANAGER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "매니저가 없습니다."), // 400
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."), // 400
     ALREADY_EXIST_USER(HttpStatus.BAD_REQUEST.value(), "이미 가입된 회원입니다."), // 400
     ALREADY_LOGIN_USER(HttpStatus.BAD_REQUEST.value(), "이미 로그인이 되어 있는 상태입니다."), // 400
