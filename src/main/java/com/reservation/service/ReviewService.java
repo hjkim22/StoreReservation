@@ -39,6 +39,14 @@ public class ReviewService {
         StoreEntity store = storeRepository.findById(reviewRegisterDto.getStoreId())
                 .orElseThrow(() -> new ApplicationException(STORE_NOT_FOUND));
 
+        if (reviewRegisterDto.getRating() < 1 || reviewRegisterDto.getRating() > 5) {
+            throw new ApplicationException(REVIEW_RATING_RANGE_OVER);
+        }
+
+        if (reviewRegisterDto.getContent().length() > 500) {
+            throw new ApplicationException(REVIEW_TEXT_TOO_LONG);
+        }
+
         return ReviewDto.fromEntity(
                 reviewRepository.save(
                         ReviewEntity.builder()
