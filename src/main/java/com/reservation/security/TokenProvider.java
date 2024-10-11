@@ -77,8 +77,12 @@ public class TokenProvider {
     public boolean validateToken(String token) {
         if (!StringUtils.hasText(token)) return false;
 
-        var claims = this.parseClaims(token);
-        return !claims.getExpiration().before(new Date());
+        try {
+            var claims = this.parseClaims(token);
+            return !claims.getExpiration().before(new Date());
+        } catch (JwtException e) {
+            throw new ApplicationException(ErrorCode.UNSUPPORTED_TOKEN);
+        }
     }
 
     /**
@@ -93,8 +97,10 @@ public class TokenProvider {
             return Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
             throw new ApplicationException(ErrorCode.TOKEN_TIME_OUT);
+        } catch (SignatureException e) {
+            throw new ApplicationException(ErrorCode.WRONG_TYPE_SIGNATURE);
         } catch (JwtException e) {
-            throw new ApplicationException(ErrorCode.WRONG_TOKEN);
+            throw new ApplicationException(ErrorCode.JWT_TOKEN_WRONG_TYPE);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.reservation.security;
 
 import com.reservation.exception.ApplicationException;
 import com.reservation.type.ErrorCode;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,7 +57,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // JWT 에서 인증 정보를 가져옴
-        Authentication auth = this.tokenProvider.getAuthentication(token);
+        Authentication auth;
+        try {
+            auth = this.tokenProvider.getAuthentication(token);
+        } catch (JwtException e) {
+            throw new ApplicationException(ErrorCode.WRONG_TYPE_SIGNATURE);
+        }
+
         // SecurityContext 에 인증 정보를 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
