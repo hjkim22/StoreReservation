@@ -7,7 +7,9 @@ import com.reservation.dto.member.SignInDto;
 import com.reservation.dto.member.SignUpDto;
 import com.reservation.exception.ApplicationException;
 import com.reservation.repository.MemberRepository;
+import com.reservation.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +24,7 @@ public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
 
     /**
      * 회원가입
@@ -52,7 +55,7 @@ public class MemberService implements UserDetailsService {
      * @return 로그인한 회원을 나타내는 MemberDto
      * @throws ApplicationException 사용자 이름이 존재하지 않거나 비밀번호가 일치하지 않는 경우
      */
-    public MemberDto signIn(SignInDto.Request signInRequest) {
+    public SignInDto.Response signIn(SignInDto.Request signInRequest) {
         MemberEntity member = memberRepository.findByUsername(signInRequest.getUsername())
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
 
@@ -60,7 +63,11 @@ public class MemberService implements UserDetailsService {
             throw new ApplicationException(PASSWORD_NOT_MATCH);
         }
 
-        return MemberDto.fromEntity(member);
+        // 토큰 생성
+        String token = tokenProvider.generateToken(member.getUsername(), member.getMemberType());
+
+        // 로그인된 사용자 정보와 JWT 토큰을 반환
+        return new SignInDto.Response(token, member.getId(), member.getUsername(), "로그인 성공");
     }
 
     /**

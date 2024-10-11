@@ -33,9 +33,9 @@ public class MemberController {
      * @return 로그인한 회원 정보를 담은 MemberDto
      */
     @PostMapping("/sign-in")
-    public ResponseEntity<MemberDto> signIn(@RequestBody SignInDto.Request signInRequest) {
-        MemberDto loggedInMember = memberService.signIn(signInRequest);
-        return ResponseEntity.ok(loggedInMember);
+    public ResponseEntity<SignInDto.Response> signIn(@RequestBody SignInDto.Request signInRequest) {
+        SignInDto.Response signInResponse = memberService.signIn(signInRequest);
+        return ResponseEntity.ok(signInResponse);
     }
 
     /**
