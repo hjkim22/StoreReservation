@@ -1,15 +1,11 @@
 package com.reservation.service;
 
 import com.reservation.domain.MemberEntity;
-import com.reservation.dto.member.MemberDto;
-import com.reservation.dto.member.MemberUpdateDto;
-import com.reservation.dto.member.SignInDto;
-import com.reservation.dto.member.SignUpDto;
+import com.reservation.dto.member.*;
 import com.reservation.exception.ApplicationException;
 import com.reservation.repository.MemberRepository;
 import com.reservation.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.token.TokenService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,7 +20,12 @@ public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
+    private TokenProvider tokenProvider;
+
+    // 순환 종속성 방지로 Setter 주입
+    public void setTokenProvider(TokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
 
     /**
      * 회원가입
@@ -32,21 +33,14 @@ public class MemberService implements UserDetailsService {
      * @return 등록된 회원을 나타내는 MemberDto
      * @throws ApplicationException 사용자 이름이 이미 존재하는 경우
      */
-    public MemberDto signUp(SignUpDto.Request signUpRequest) {
+    public SignUpDto.Response signUp(SignUpDto.Request signUpRequest) {
         if (memberRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new ApplicationException(ALREADY_EXIST_USER);
         }
 
-        return MemberDto.fromEntity(
-                memberRepository.save(
-                        MemberEntity.builder()
-                                .username(signUpRequest.getUsername())
-                                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                                .phoneNumber(signUpRequest.getPhoneNumber())
-                                .memberType(signUpRequest.getMemberType())
-                                .build()
-                )
-        );
+        MemberEntity savedMember = createMember(signUpRequest);
+
+        return new SignUpDto.Response(savedMember.getId(), savedMember.getUsername(), "회원가입 성공");
     }
 
     /**
@@ -71,12 +65,12 @@ public class MemberService implements UserDetailsService {
     }
 
     /**
-     * 회원 정보 조회
+     * 회원(memberId) 정보 조회
      * @param memberId 조회할 회원의 ID
      * @return 조회된 회원을 나타내는 MemberDto
      * @throws ApplicationException 회원을 찾을 수 없는 경우
      */
-    public MemberDto getMember(Long memberId) {
+    public MemberDto getMemberById(Long memberId) {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
 
@@ -84,8 +78,20 @@ public class MemberService implements UserDetailsService {
     }
 
     /**
+     * 회원(username) 정보 조회
+     * @param username 조회할 사용자 이름
+     * @return 조회된 회원 정보를 나타내는 MemberDto
+     * @throws ApplicationException 회원을 찾을 수 없는 경우
+     */
+    public MemberDto getMemberByUsername(String username) {
+        MemberEntity member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
+        return MemberDto.fromEntity(member);
+    }
+
+    /**
      * 회원 정보 수정
-     * @param memberId 수정할 회원의 ID
+     * @param memberId      수정할 회원의 ID
      * @param updateRequest 수정할 회원 정보를 포함하는 요청 객체
      * @return 수정된 회원을 나타내는 MemberDto
      * @throws ApplicationException 회원을 찾을 수 없는 경우
@@ -102,14 +108,34 @@ public class MemberService implements UserDetailsService {
 
     /**
      * 회원 삭제
-     * @param memberId 삭제할 회원의 ID
+     * @param deleteRequest 삭제할 회원의 ID
      * @throws ApplicationException 회원을 찾을 수 없는 경우
      */
-    public void deleteMember(Long memberId) {
-        MemberEntity member = memberRepository.findById(memberId)
+    public void deleteMember(MemberDeleteDto deleteRequest) {
+        MemberEntity member = memberRepository.findById(deleteRequest.getId())
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
 
+        if (!passwordEncoder.matches(deleteRequest.getPassword(), member.getPassword())) {
+            throw new ApplicationException(PASSWORD_NOT_MATCH);
+        }
+
         memberRepository.delete(member);
+    }
+
+    /**
+     * 회원 엔티티 생성
+     * @param signUpRequest 회원 가입 요청 객체
+     * @return 생성된 회원 엔티티
+     */
+    private MemberEntity createMember(SignUpDto.Request signUpRequest) {
+        return memberRepository.save(
+                MemberEntity.builder()
+                        .username(signUpRequest.getUsername())
+                        .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                        .phoneNumber(signUpRequest.getPhoneNumber())
+                        .memberType(signUpRequest.getMemberType())
+                        .build()
+        );
     }
 
     @Override
@@ -117,15 +143,4 @@ public class MemberService implements UserDetailsService {
         return memberRepository.findByUsername(username)
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
     }
-
-    /*
-      TODO
-      아이디 중복 확인 메서드
-      비밀번호 일치 확인 메서드
-      회원 이름으로 조회 메서드
-      ID로 조회 메서드
-      회원 엔티티 생성 메서드
-
-      MemberDeleteDto
-     */
 }

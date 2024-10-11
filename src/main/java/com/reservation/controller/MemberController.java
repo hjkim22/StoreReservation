@@ -1,9 +1,6 @@
 package com.reservation.controller;
 
-import com.reservation.dto.member.MemberDto;
-import com.reservation.dto.member.MemberUpdateDto;
-import com.reservation.dto.member.SignInDto;
-import com.reservation.dto.member.SignUpDto;
+import com.reservation.dto.member.*;
 import com.reservation.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +19,8 @@ public class MemberController {
      * @return 생성된 회원 정보를 담은 MemberDto
      */
     @PostMapping("/sign-up")
-    public ResponseEntity<MemberDto> signUp(@RequestBody SignUpDto.Request signUpRequest) {
-        MemberDto newMember = memberService.signUp(signUpRequest);
+    public ResponseEntity<SignUpDto.Response> signUp(@RequestBody SignUpDto.Request signUpRequest) {
+        SignUpDto.Response newMember = memberService.signUp(signUpRequest);
         return ResponseEntity.ok(newMember);
     }
 
@@ -44,8 +41,19 @@ public class MemberController {
      * @return 조회된 회원 정보를 담은 MemberDto
      */
     @GetMapping("/{memberId}")
-    public ResponseEntity<MemberDto> getMember(@PathVariable Long memberId) {
-        MemberDto member = memberService.getMember(memberId);
+    public ResponseEntity<MemberDto> getMemberById(@PathVariable Long memberId) {
+        MemberDto member = memberService.getMemberById(memberId);
+        return ResponseEntity.ok(member);
+    }
+
+    /**
+     * 특정 회원 조회 API
+     * @param username 조회할 회원의 ID
+     * @return 조회된 회원 정보를 담은 MemberDto
+     */
+    @GetMapping("/{username}")
+    public ResponseEntity<MemberDto> getMemberByUsername(@PathVariable String username) {
+        MemberDto member = memberService.getMemberByUsername(username);
         return ResponseEntity.ok(member);
     }
 
@@ -67,7 +75,7 @@ public class MemberController {
      * @return 성공 응답 코드
      */
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long memberId) {
+    public ResponseEntity<Void> deleteMember(@PathVariable MemberDeleteDto memberId) {
         memberService.deleteMember(memberId);
         return ResponseEntity.noContent().build();
     }
