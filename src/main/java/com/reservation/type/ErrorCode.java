@@ -20,13 +20,10 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "사용자가 없습니다."), // 400
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."), // 400
     ALREADY_EXIST_USER(HttpStatus.BAD_REQUEST.value(), "이미 가입된 회원입니다."), // 400
-    ALREADY_LOGIN_USER(HttpStatus.BAD_REQUEST.value(), "이미 로그인이 되어 있는 상태입니다."), // 400
-    USER_AUTHORITY_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "사용자가 맞지 않습니다."), // 400
 
     // ============================
     // 매장 관련 오류 코드
     // ============================
-    STORE_NOT_MATCH_MANAGER(HttpStatus.BAD_REQUEST.value(), "매니저 본인의 매장이 아닙니다."), // 400
     STORE_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "매장을 찾을 수 없습니다."), // 400
     ALREADY_EXIST_STORE(HttpStatus.BAD_REQUEST.value(), "이미 사용 중인 매장 이름입니다."), // 400
 
@@ -43,8 +40,6 @@ public enum ErrorCode {
     // 리뷰 관련 오류 코드
     // ============================
     REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "리뷰를 찾을 수 없습니다."), // 400
-    ALREADY_EXIST_REVIEW(HttpStatus.BAD_REQUEST.value(), "이미 리뷰가 존재합니다."), // 400
-    REVIEW_NOT_AVAILABLE(HttpStatus.BAD_REQUEST.value(), "해당 예약은 리뷰를 쓸 수 있는 상태가 아닙니다."), // 400
     REVIEW_RATING_RANGE_OVER(HttpStatus.BAD_REQUEST.value(), "별점 범위를 넘어갔습니다."), // 400
     REVIEW_TEXT_TOO_LONG(HttpStatus.BAD_REQUEST.value(), "텍스트 길이가 범위를 넘어갔습니다."), // 400
 
