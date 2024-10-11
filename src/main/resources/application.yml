@@ -1,13 +1,15 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
 
   application:
     name: StoreReservation
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/store_reservation
-    username: root
-    password: zerozero
+    url: jdbc:mysql://localhost:${MYSQL_PORT}/store_reservation
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
 
   jpa:
     hibernate:
@@ -16,4 +18,4 @@ spring:
     database: mysql
 
   jwt:
-    secret: testTest
+    secret: ${SECRET_KEY}
