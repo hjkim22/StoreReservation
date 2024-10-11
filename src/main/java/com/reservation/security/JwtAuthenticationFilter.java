@@ -1,5 +1,7 @@
 package com.reservation.security;
 
+import com.reservation.exception.ApplicationException;
+import com.reservation.type.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,11 +31,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 요청을 필터링하여 JWT 인증을 수행
-     * @param request  HttpServletRequest 객체
-     * @param response HttpServletResponse 객체
+     *
+     * @param request     HttpServletRequest 객체
+     * @param response    HttpServletResponse 객체
      * @param filterChain 필터 체인
      * @throws ServletException Servlet 처리 중 발생할 수 있는 예외
-     * @throws IOException I/O 처리 중 발생할 수 있는 예외
+     * @throws IOException      I/O 처리 중 발생할 수 있는 예외
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -44,19 +47,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = this.resolveTokenFromRequest(request); // 요청에서 JWT 토큰을 추출
 
-        // 토큰이 존재하고 유효한 경우 인증을 수행
-        if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
-            // JWT 에서 인증 정보를 가져옴
-            Authentication auth = this.tokenProvider.getAuthentication(token);
-            // SecurityContext 에 인증 정보를 설정
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        if (!StringUtils.hasText(token)) {
+            throw new ApplicationException(ErrorCode.LOGIN_REQUIRED);
         }
+
+        if (!this.tokenProvider.validateToken(token)) {
+            throw new ApplicationException(ErrorCode.WRONG_TOKEN);
+        }
+
+        // JWT 에서 인증 정보를 가져옴
+        Authentication auth = this.tokenProvider.getAuthentication(token);
+        // SecurityContext 에 인증 정보를 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         // 다음 필터로 요청/응답 전달
         filterChain.doFilter(request, response);
     }
 
     /**
      * 요청에서 JWT 토큰 추출
+     *
      * @param request HttpServletRequest 객체
      * @return 추출한 JWT 토큰, 없거나 유효하지 않으면 null
      */
