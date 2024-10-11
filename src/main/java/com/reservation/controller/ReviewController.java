@@ -1,6 +1,9 @@
 package com.reservation.controller;
 
+import com.reservation.dto.review.ReviewDeleteDto;
 import com.reservation.dto.review.ReviewDto;
+import com.reservation.dto.review.ReviewRegisterDto;
+import com.reservation.dto.review.ReviewUpdateDto;
 import com.reservation.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,34 +22,45 @@ public class ReviewController {
 
     /**
      * 리뷰 생성
-     * @param reviewDto 생성할 리뷰 정보
+     * @param reviewRegisterDto 생성할 리뷰 정보
      * @return 생성된 리뷰의 DTO
      */
     @PostMapping
-    public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody ReviewDto reviewDto) {
-        ReviewDto createdReview = reviewService.createReview(reviewDto);
+    public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody ReviewRegisterDto reviewRegisterDto) {
+        ReviewDto createdReview = reviewService.createReview(reviewRegisterDto);
         return new ResponseEntity<>(createdReview, HttpStatus.CREATED);
     }
 
     /**
-     * 특정 매장의 모든 리뷰 조회
-     * @param storeId 조회할 매장의 ID
-     * @return 매장의 모든 리뷰 리스트
+     * 매장명으로 리뷰 조회
+     * @param storeName 조회할 매장의 이름
+     * @return 해당 매장의 리뷰 목록
      */
-    @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<ReviewDto>> getReviewsByStore(@PathVariable Long storeId) {
-        List<ReviewDto> reviews = reviewService.getReviewByStore(storeId);
+    @GetMapping("/store/{storeName}")
+    public ResponseEntity<List<ReviewDto>> getReviewsByStoreName(@PathVariable String storeName) {
+        List<ReviewDto> reviews = reviewService.getReviewByStoreName(storeName);
+        return new ResponseEntity<>(reviews, HttpStatus.OK);
+    }
+
+    /**
+     * 유저명으로 리뷰 조회
+     * @param username 조회할 유저의 이름
+     * @return 해당 유저의 리뷰 목록
+     */
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<ReviewDto>> getReviewsByUsername(@PathVariable String username) {
+        List<ReviewDto> reviews = reviewService.getReviewByUsername(username);
         return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 
     /**
      * 리뷰 수정
-     * @param reviewDto 수정할 리뷰 정보
+     * @param reviewUpdateDto 수정할 리뷰 정보
      * @return 수정된 리뷰의 DTO
      */
     @PutMapping
-    public ResponseEntity<ReviewDto> updateReview(@Valid @RequestBody ReviewDto reviewDto) {
-        ReviewDto updatedReview = reviewService.updateReview(reviewDto);
+    public ResponseEntity<ReviewDto> updateReview(@Valid @RequestBody ReviewUpdateDto reviewUpdateDto) {
+        ReviewDto updatedReview = reviewService.updateReview(reviewUpdateDto);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
     }
 
@@ -57,7 +71,7 @@ public class ReviewController {
      */
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
-        reviewService.deleteReview(reviewId);
+        reviewService.deleteReview(new ReviewDeleteDto(reviewId));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
