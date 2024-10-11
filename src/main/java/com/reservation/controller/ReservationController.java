@@ -30,25 +30,12 @@ public class ReservationController {
             @RequestBody ReservationDto reservationDto,
             @RequestParam Long memberId,
             @RequestParam Long storeId) {
-        ReservationDto createdReservation = reservationService.createReservation(reservationDto, memberId, storeId);
+        ReservationDto createdReservation = reservationService.createReservationEntity(reservationDto, memberId, storeId);
         return ResponseEntity.ok(createdReservation);
     }
 
     /**
-     * 특정 회원 예약 조회
-     * @param memberId 회원 ID
-     * @return 해당 회원의 예약 목록
-     */
-    @GetMapping("/member/{memberId}")
-    @PreAuthorize("hasRole('USER') or hasRole('MANAGER')")
-    // USER, MANAGER 모두 접근 가능
-    public ResponseEntity<List<ReservationDto>> getReservationsByMemberId(@PathVariable Long memberId) {
-        List<ReservationDto> reservations = reservationService.getReservationsByMemberId(memberId);
-        return ResponseEntity.ok(reservations);
-    }
-
-    /**
-     * 예약 ID로 조회
+     * 예약 ID로 예약 정보 조회
      * @param reservationId 예약 ID
      * @return 예약 정보
      */
@@ -57,6 +44,30 @@ public class ReservationController {
     public ResponseEntity<ReservationDto> getReservationById(@PathVariable Long reservationId) {
         ReservationDto reservation = reservationService.getReservationById(reservationId);
         return ResponseEntity.ok(reservation);
+    }
+
+    /**
+     * 특정 매장 모든 예약 정보 조회
+     * @param storeId 조회할 매장의 ID
+     * @return 매장에서의 예약 정보를 담고 있는 DTO 리스트
+     */
+    @GetMapping("/store/{storeId}")
+    @PreAuthorize("hasRole('USER') or hasRole('MANAGER')")
+    public ResponseEntity<List<ReservationDto>> getReservationsByStoreId(@PathVariable Long storeId) {
+        List<ReservationDto> reservations = reservationService.getReservationsByStoreId(storeId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    /**
+     * 특정 회원 예약 목록 조회
+     * @param memberId 회원 ID
+     * @return 해당 회원의 예약 목록
+     */
+    @GetMapping("/member/{memberId}")
+    @PreAuthorize("hasRole('USER') or hasRole('MANAGER')")
+    public ResponseEntity<List<ReservationDto>> getReservationsByMemberId(@PathVariable Long memberId) {
+        List<ReservationDto> reservations = reservationService.getReservationsByMemberId(memberId);
+        return ResponseEntity.ok(reservations);
     }
 
     /**

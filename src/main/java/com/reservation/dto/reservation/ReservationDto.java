@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -28,6 +29,10 @@ public class ReservationDto {
 
     @NotNull(message = "예약 시간은 필수입니다.")
     private LocalTime reservationTime;
+
+    public LocalDateTime getReservationDateTime() {
+        return LocalDateTime.of(reservationDate, reservationTime);
+    }
 
     public static ReservationDto fromEntity(ReservationEntity reservation) {
         return ReservationDto.builder()

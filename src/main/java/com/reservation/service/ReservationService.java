@@ -14,6 +14,7 @@ import com.reservation.type.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.reservation.type.ErrorCode.*;
@@ -28,55 +29,70 @@ public class ReservationService {
 
     /**
      * 예약 등록
-     *
      * @param reservationDto 예약 정보를 담고 있는 DTO
      * @param memberId       회원 ID
      * @param storeId        매장 ID
      * @return 생성된 예약 정보를 담고 있는 DTO
      */
-    public ReservationDto createReservation(ReservationDto reservationDto, Long memberId, Long storeId) {
+    public ReservationDto createReservationEntity(ReservationDto reservationDto, Long memberId, Long storeId) {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
 
         StoreEntity store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ApplicationException(STORE_NOT_FOUND));
 
-        return ReservationDto.fromEntity(
-                reservationRepository.save(
-                        ReservationEntity.builder()
-                                .member(member)
-                                .store(store)
-                                .reservationStatus(ReservationStatus.STANDBY) // 기본 상태를 대기 상태로 설정
-                                .arrivalStatus(ArrivalStatus.READY) // 초기 상태를 대기 상태로 설정
-                                .reservationDate(reservationDto.getReservationDate())
-                                .reservationTime(reservationDto.getReservationTime())
-                                .build()
-                )
-        );
+        LocalDateTime reservationDateTime = reservationDto.getReservationDateTime();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (reservationDateTime.isBefore(now)) {
+            throw new ApplicationException(RESERVATION_TIME_EXCEEDED);
+        }
+
+        if (now.plusMinutes(10).isAfter(reservationDateTime)) {
+            throw new ApplicationException(CHECK_IT_10_MINUTES_BEFORE_THE_RESERVATION_TIME);
+        }
+
+        if (reservationRepository.existsByStoreIdAndReservationTime(storeId, reservationDateTime)) {
+            throw new ApplicationException(ALREADY_RESERVED);
+        }
+
+        return createReservationEntity(reservationDto, member, store);
     }
 
     /**
-     * 특정 사용자 예약 목록 조회
-     * @param memberId 사용자의 ID
-     * @return 사용자의 예약 목록 DTO 리스트
+     * 예약 ID 예약 정보 조회
+     * @param reservationId 조회할 예약의 ID
+     * @return 조회된 예약 정보를 담고 있는 DTO
+     * @throws ApplicationException 예약이 존재하지 않을 경우
      */
-    public List<ReservationDto> getReservationsByMemberId(Long memberId) {
-        List<ReservationEntity> reservations = reservationRepository.findByMemberId(memberId);
+    public ReservationDto getReservationById(Long reservationId) {
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ApplicationException(RESERVATION_NOT_FOUND));
+        return ReservationDto.fromEntity(reservation);
+    }
+
+    /**
+     * 특정 매장 모든 예약 정보 조회
+     * @param storeId 조회할 매장의 ID
+     * @return 매장에서의 예약 정보를 담고 있는 DTO 리스트
+     */
+    public List<ReservationDto> getReservationsByStoreId(Long storeId) {
+        List<ReservationEntity> reservations = reservationRepository.findByStoreId(storeId);
         return reservations.stream()
                 .map(ReservationDto::fromEntity)
                 .toList();
     }
 
     /**
-     * 예약 ID 단일 예약 조회
-     * @param reservationId 예약의 ID
-     * @return 조회된 예약 정보를 담고 있는 DTO
+     * 특정 사용자 모든 예약 정보 조회
+     * @param memberId 조회할 사용자의 ID
+     * @return 사용자의 예약 정보를 담고 있는 DTO 리스트
      */
-    public ReservationDto getReservationById(Long reservationId) {
-        ReservationEntity reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ApplicationException(RESERVATION_NOT_FOUND));
-
-        return ReservationDto.fromEntity(reservation);
+    public List<ReservationDto> getReservationsByMemberId(Long memberId) {
+        List<ReservationEntity> reservations = reservationRepository.findByMemberId(memberId);
+        return reservations.stream()
+                .map(ReservationDto::fromEntity)
+                .toList();
     }
 
     /**
@@ -88,6 +104,10 @@ public class ReservationService {
     public ReservationDto updateReservation(Long reservationId, ReservationUpdateDto updateDto) {
         ReservationEntity reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ApplicationException(RESERVATION_NOT_FOUND));
+
+        if (reservation.getReservationStatus() != ReservationStatus.STANDBY) {
+            throw new ApplicationException(RESERVATION_STATUS_CHECK_ERROR);
+        }
 
         reservation.setReservationDate(updateDto.getReservationDate());
         reservation.setReservationTime(updateDto.getReservationTime());
@@ -106,11 +126,23 @@ public class ReservationService {
         reservationRepository.delete(reservation);
     }
 
-    /*
-      TODO
-      findByStoreId 사용 메서드
-      도착 상태 메서드
-      승인 상태 메서드
-      모든 예약 조회
+    /**
+     * 예약 엔티티 생성
+     * @param reservationDto 예약 정보를 담고 있는 DTO
+     * @param member         회원 엔티티
+     * @param store          매장 엔티티
+     * @return 생성된 예약 정보를 담고 있는 DTO
      */
+    private ReservationDto createReservationEntity(ReservationDto reservationDto, MemberEntity member, StoreEntity store) {
+        return ReservationDto.fromEntity(
+                reservationRepository.save(
+                        ReservationEntity.builder()
+                                .member(member)
+                                .store(store)
+                                .reservationStatus(ReservationStatus.STANDBY)
+                                .arrivalStatus(ArrivalStatus.READY)
+                                .reservationDate(reservationDto.getReservationDate())
+                                .reservationTime(reservationDto.getReservationTime())
+                                .build()));
+    }
 }
