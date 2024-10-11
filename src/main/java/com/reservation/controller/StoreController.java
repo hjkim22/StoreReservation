@@ -24,19 +24,30 @@ public class StoreController {
      * @return 등록된 매장 정보 DTO
      */
     @PostMapping
-    public ResponseEntity<StoreDto> registerStore(@Valid @RequestBody StoreRegisterDto.Request registerRequest) {
-        StoreDto createdStore = storeService.registerStore(registerRequest);
+    public ResponseEntity<StoreRegisterDto.Response> registerStore(@Valid @RequestBody StoreRegisterDto.Request registerRequest) {
+        StoreRegisterDto.Response createdStore = storeService.registerStore(registerRequest);
         return new ResponseEntity<>(createdStore, HttpStatus.CREATED);
     }
 
     /**
-     * 매장 정보 조회
+     * 매장 ID로 조회
      * @param storeId 조회할 매장 ID
      * @return 매장 정보 DTO
      */
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreDto> getStore(@PathVariable Long storeId) {
-        StoreDto store = storeService.getStore(storeId);
+    public ResponseEntity<StoreDto> getStoreById(@PathVariable Long storeId) {
+        StoreDto store = storeService.getStoreById(storeId);
+        return new ResponseEntity<>(store, HttpStatus.OK);
+    }
+
+    /**
+     * 매장 이름으로 조회
+     * @param storeName 조회할 매장 이름
+     * @return 매장 정보 DTO
+     */
+    @GetMapping("/{storeName}")
+    public ResponseEntity<StoreDto> getStoreByStoreName(@PathVariable String storeName) {
+        StoreDto store = storeService.getStoreByStoreName(storeName);
         return new ResponseEntity<>(store, HttpStatus.OK);
     }
 

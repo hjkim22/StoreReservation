@@ -20,32 +20,31 @@ public class StoreService {
 
     /**
      * 매장 등록
-     * @param registerRequest 가게 등록 요청 DTO
-     * @return 등록된 가게의 정보 DTO
+     * @param registerRequest 매장 등록 요청 DTO
+     * @return 등록된 매장의 정보 DTO
      */
-    public StoreDto registerStore(StoreRegisterDto.Request registerRequest) {
+    public StoreRegisterDto.Response registerStore(StoreRegisterDto.Request registerRequest) {
         if (storeRepository.findByStoreName(registerRequest.getStoreName()) != null) {
             throw new ApplicationException(ALREADY_EXIST_STORE);
         }
 
+        StoreEntity savedStore = createStore(registerRequest);
 
-        return StoreDto.fromEntity(
-                storeRepository.save(
-                        StoreEntity.builder()
-                                .storeName(registerRequest.getStoreName())
-                                .location(registerRequest.getLocation())
-                                .description(registerRequest.getDescription())
-                                .build()
-                )
-        );
+        return StoreRegisterDto.Response.builder()
+                .id(savedStore.getId())
+                .storeName(savedStore.getStoreName())
+                .location(savedStore.getLocation())
+                .description(savedStore.getDescription())
+                .message("매장 등록 성공")
+                .build();
     }
 
     /**
      * 매장 정보 조회
-     * @param storeId 가게 ID
-     * @return 가게의 정보 DTO
+     * @param storeId 매장 ID
+     * @return 매장의 정보 DTO
      */
-    public StoreDto getStore(Long storeId) {
+    public StoreDto getStoreById(Long storeId) {
         StoreEntity store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ApplicationException(STORE_NOT_FOUND));
 
@@ -53,10 +52,22 @@ public class StoreService {
     }
 
     /**
+     * 매장 정보 조회
+     * @param storeName 매장명
+     * @return 매장의 정보 DTO
+     */
+    public StoreDto getStoreByStoreName(String storeName) {
+        StoreEntity store = storeRepository.findByStoreName(storeName)
+                .orElseThrow(() -> new ApplicationException(STORE_NOT_FOUND));
+
+        return StoreDto.fromEntity(store);
+    }
+
+    /**
      * 매장 정보 수정
-     * @param storeId       가게 ID
-     * @param updateRequest 가게 수정 요청 DTO
-     * @return 수정된 가게의 정보 DTO
+     * @param storeId       매장 ID
+     * @param updateRequest 매장 수정 요청 DTO
+     * @return 수정된 매장 정보 DTO
      */
     public StoreDto updateStore(Long storeId, StoreUpdateDto.Request updateRequest) {
         StoreEntity store = storeRepository.findById(storeId)
@@ -71,7 +82,7 @@ public class StoreService {
 
     /**
      * 매장 삭제
-     * @param storeId 가게 ID
+     * @param storeId 매장 ID
      */
     public void deleteStore(Long storeId) {
         StoreEntity store = storeRepository.findById(storeId)
@@ -80,10 +91,18 @@ public class StoreService {
         storeRepository.delete(store);
     }
 
-    /*
-        TODO
-        매장 정보 수정 정보 업데이트 null 체크
-        입력 DTO 유효성 검사 메서드
-        필수값 검증 메서드
+    /**
+     * 매장 엔티티 생성
+     * @param registerRequest 매장 등록 요청 객체
+     * @return 생성된 매장 엔티티
      */
+    private StoreEntity createStore(StoreRegisterDto.Request registerRequest) {
+        return storeRepository.save(
+                StoreEntity.builder()
+                        .storeName(registerRequest.getStoreName())
+                        .location(registerRequest.getLocation())
+                        .description(registerRequest.getDescription())
+                        .build()
+        );
+    }
 }
