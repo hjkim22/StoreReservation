@@ -36,6 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
+## env 추가 ##
+.env
 # 추가 intellij java gradle macOs
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij,java,gradle,macos
